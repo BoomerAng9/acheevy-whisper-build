@@ -4,6 +4,8 @@ import Header from '@/components/Header';
 import PromptInput from '@/components/PromptInput';
 import AgentLog from '@/components/AgentLog';
 import OutputPanel from '@/components/OutputPanel';
+import BrandedLayout from '@/components/BrandedLayout';
+import EmptyState from '@/components/EmptyState';
 import { useSession } from '@/hooks/useSession';
 import { MockOrchestrator } from '@/services/mockOrchestrator';
 
@@ -58,27 +60,37 @@ const Index = () => {
     await orchestrator.processPrompt(prompt);
   };
 
+  const showEmptyState = logs.length === 0 && outputs.length === 0 && !isProcessing;
+
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
-      <Header />
-      
-      <PromptInput 
-        onSubmit={handlePromptSubmit}
-        isProcessing={isProcessing}
-      />
-      
-      <div className="flex-1 flex flex-col">
-        <AgentLog 
-          logs={logs}
-          isActive={isProcessing}
+    <BrandedLayout>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        
+        <PromptInput 
+          onSubmit={handlePromptSubmit}
+          isProcessing={isProcessing}
         />
         
-        <OutputPanel 
-          outputs={outputs}
-          sessionId={session?.id || 'loading...'}
-        />
+        {showEmptyState ? (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState />
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col">
+            <AgentLog 
+              logs={logs}
+              isActive={isProcessing}
+            />
+            
+            <OutputPanel 
+              outputs={outputs}
+              sessionId={session?.id || 'loading...'}
+            />
+          </div>
+        )}
       </div>
-    </div>
+    </BrandedLayout>
   );
 };
 

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { CheckCircle, Clock, Zap, AlertCircle } from 'lucide-react';
 
@@ -40,8 +39,8 @@ const AgentLog = ({ logs, isActive }: AgentLogProps) => {
   };
 
   return (
-    <div className="bg-slate-900 flex-1 flex flex-col">
-      <div className="bg-slate-800 px-6 py-3 border-b border-slate-700">
+    <div className="bg-slate-900/50 backdrop-blur-sm flex-1 flex flex-col border-t border-slate-700/50">
+      <div className="bg-slate-800/80 backdrop-blur-sm px-6 py-3 border-b border-slate-700/50">
         <h3 className="text-lg font-semibold text-white flex items-center">
           <div className="w-3 h-3 rounded-full bg-green-400 mr-3 animate-pulse"></div>
           ACHEEVY Agent Activity
@@ -65,7 +64,7 @@ const AgentLog = ({ logs, isActive }: AgentLogProps) => {
           logs.map((log) => (
             <div
               key={log.id}
-              className="bg-slate-800 rounded-lg p-4 border border-slate-700 hover:border-slate-600 transition-colors"
+              className="bg-slate-800/60 backdrop-blur-sm rounded-lg p-4 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200"
             >
               <div className="flex items-start space-x-3">
                 {getStatusIcon(log.status)}

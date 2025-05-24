@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ExternalLink, Download, Copy, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -41,8 +40,8 @@ const OutputPanel = ({ outputs, sessionId }: OutputPanelProps) => {
   };
 
   return (
-    <div className="bg-slate-800 border-t border-slate-700">
-      <div className="px-6 py-3 border-b border-slate-700">
+    <div className="bg-slate-800/50 backdrop-blur-sm border-t border-slate-700/50">
+      <div className="px-6 py-3 border-b border-slate-700/50">
         <h3 className="text-lg font-semibold text-white">Output & Deliverables</h3>
         <p className="text-sm text-slate-400">Session: {sessionId}</p>
       </div>
@@ -50,7 +49,7 @@ const OutputPanel = ({ outputs, sessionId }: OutputPanelProps) => {
       <div className="p-6">
         {outputs.length === 0 ? (
           <div className="text-center py-8">
-            <div className="w-12 h-12 bg-slate-700 rounded-lg mx-auto mb-4 flex items-center justify-center">
+            <div className="w-12 h-12 bg-slate-700/50 backdrop-blur-sm rounded-lg mx-auto mb-4 flex items-center justify-center border border-slate-600/50">
               <Star className="w-6 h-6 text-slate-400" />
             </div>
             <p className="text-slate-400">No outputs yet</p>
@@ -59,7 +58,7 @@ const OutputPanel = ({ outputs, sessionId }: OutputPanelProps) => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {outputs.map((output) => (
-              <Card key={output.id} className="bg-slate-900 border-slate-700">
+              <Card key={output.id} className="bg-slate-900/60 backdrop-blur-sm border-slate-700/50 hover:border-slate-600/50 transition-all duration-200">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-white text-sm flex items-center">
                     {getTypeIcon(output.type)}
