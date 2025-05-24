@@ -29,7 +29,15 @@ const PromptInput = ({ onSubmit, isProcessing }: PromptInputProps) => {
   return (
     <div className="bg-slate-800 border-b border-slate-700 p-6">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-lg font-semibold text-white mb-4">What would you like to build today?</h2>
+        <div className="text-center mb-6">
+          <p className="text-slate-300 text-sm mb-2">
+            Welcome to Deploy by: ACHIEVEMOR. Describe your project or idea, and our AI-powered team will handle the rest.
+          </p>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent mb-1">
+            Think It. Prompt It. Let ACHEEVY Manage It.
+          </h2>
+        </div>
+        
         <div className="flex space-x-4">
           <div className="flex-1">
             <Textarea
