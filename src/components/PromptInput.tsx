@@ -31,7 +31,7 @@ const PromptInput = ({ onSubmit, isProcessing }: PromptInputProps) => {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-6">
           <p className="text-slate-300 text-sm mb-2">
-            Welcome to Deploy by: ACHIEVEMOR. Describe your project or idea, and our AI-powered team will handle the rest.
+            Welcome to Deploy by: ACHIEVEMOR. Share your idea in plain language and our SME agent will convert it into technical prompts plus an ASCII blueprint for iteration.
           </p>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent mb-1">
             Think It. Prompt It. Let ACHEEVY Manage It.
@@ -44,7 +44,7 @@ const PromptInput = ({ onSubmit, isProcessing }: PromptInputProps) => {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Describe your project, feature, or idea... (Press Enter to send, Shift+Enter for new line)"
+              placeholder="Describe your project idea in plain English. We will return a technical prompt + ASCII wireframe first. (Enter to send)"
               className="min-h-[100px] bg-slate-900 border-slate-600 text-white placeholder-slate-400 resize-none"
               disabled={isProcessing}
             />
