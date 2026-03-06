@@ -60,6 +60,8 @@ const Index = () => {
     await orchestrator.processPrompt(prompt);
   };
 
+  const latestNarration = [...outputs].reverse().find(output => output.content)?.content;
+
   const showEmptyState = logs.length === 0 && outputs.length === 0 && !isProcessing;
 
   return (
@@ -70,6 +72,7 @@ const Index = () => {
         <PromptInput 
           onSubmit={handlePromptSubmit}
           isProcessing={isProcessing}
+          latestNarration={latestNarration}
         />
         
         {showEmptyState ? (
