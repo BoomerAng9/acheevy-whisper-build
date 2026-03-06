@@ -68,7 +68,12 @@ const OutputPanel = ({ outputs, sessionId }: OutputPanelProps) => {
                     {output.description}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-0 space-y-3">
+                  {output.content && (
+                    <pre className="max-h-28 overflow-auto rounded-md border border-slate-700 bg-slate-950/70 p-2 text-[11px] leading-relaxed text-slate-300">
+                      {output.content}
+                    </pre>
+                  )}
                   <div className="flex space-x-2">
                     {output.url && (
                       <Button
@@ -85,7 +90,7 @@ const OutputPanel = ({ outputs, sessionId }: OutputPanelProps) => {
                         size="sm"
                         variant="outline"
                         className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                        onClick={() => handleCopy(output.content!)}
+                        onClick={() => handleCopy(output.content)}
                       >
                         Copy
                       </Button>
