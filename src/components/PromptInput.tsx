@@ -42,7 +42,9 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
 
   useEffect(() => {
     return () => {
-      recognitionRef.current?.stop();
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -84,7 +86,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
     if (!SpeechRecognition) {
       toast({
         title: 'Speech recognition unavailable',
-        description: 'This browser does not support STT. Type your prompt instead.',
+        description: 'Your browser does not support STT. Please type your prompt instead.',
       });
       return;
     }
@@ -105,7 +107,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
       setIsListening(false);
       toast({
         title: 'Could not capture voice',
-        description: 'Try again or type your prompt manually.',
+        description: 'Please try again or type your prompt manually.',
       });
     };
 
@@ -128,7 +130,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       toast({
         title: 'Text-to-speech unavailable',
-        description: 'This browser does not support TTS playback.',
+        description: 'Your browser does not support TTS playback.',
       });
       return;
     }
@@ -138,13 +140,16 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
     if (!speechText) {
       toast({
         title: 'Nothing to read yet',
-        description: 'Add a prompt or generate output first.',
+        description: 'Add a prompt or generate output first, then play audio.',
       });
       return;
     }
 
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(speechText));
+    const utterance = new SpeechSynthesisUtterance(speechText);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
   };
 
   return (
