@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { CheckCircle, Clock, Zap, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock3, Cpu, CircleDashed } from 'lucide-react';
 
 interface LogEntry {
   id: string;
@@ -26,62 +26,56 @@ const AgentLog = ({ logs, isActive }: AgentLogProps) => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'thinking':
-        return <Clock className="w-4 h-4 text-amber-400 animate-pulse" />;
+        return <Clock3 className="h-4 w-4 text-neutral-300" />;
       case 'working':
-        return <Zap className="w-4 h-4 text-blue-400 animate-bounce" />;
+        return <Cpu className="h-4 w-4 text-neutral-200" />;
       case 'complete':
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
+        return <CheckCircle2 className="h-4 w-4 text-neutral-100" />;
       case 'waiting':
-        return <AlertCircle className="w-4 h-4 text-orange-400" />;
+        return <CircleDashed className="h-4 w-4 text-neutral-400" />;
       default:
-        return <Clock className="w-4 h-4 text-slate-400" />;
+        return <Clock3 className="h-4 w-4 text-neutral-400" />;
     }
   };
 
   return (
-    <div className="bg-slate-900/50 backdrop-blur-sm flex-1 flex flex-col border-t border-slate-700/50">
-      <div className="bg-slate-800/80 backdrop-blur-sm px-6 py-3 border-b border-slate-700/50">
-        <h3 className="text-lg font-semibold text-white flex items-center">
-          <div className="w-3 h-3 rounded-full bg-green-400 mr-3 animate-pulse"></div>
-          ACHEEVY Agent Activity
-        </h3>
-        <p className="text-sm text-slate-400">Live orchestration and communication log</p>
-      </div>
-      
-      <div 
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-6 space-y-4 max-h-96"
-      >
-        {logs.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-amber-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <Zap className="w-8 h-8 text-white" />
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pt-5">
+      <section className="flex flex-1 flex-col overflow-hidden rounded-xl border border-white/10 bg-black/40 backdrop-blur-xl">
+        <div className="border-b border-white/10 px-5 py-3">
+          <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-neutral-200">
+            <span className={`h-2 w-2 rounded-full ${isActive ? 'animate-pulse bg-white' : 'bg-neutral-500'}`} />
+            Agent activity
+          </h3>
+          <p className="mt-1 text-xs text-neutral-500">Live orchestration log</p>
+        </div>
+
+        <div ref={scrollRef} className="max-h-96 flex-1 space-y-3 overflow-y-auto p-4">
+          {logs.length === 0 ? (
+            <div className="py-14 text-center">
+              <p className="text-sm font-medium text-neutral-300">System idle</p>
+              <p className="mt-1 text-xs text-neutral-500">Submit a prompt to start agent routing.</p>
             </div>
-            <p className="text-slate-400 text-lg">Ready to assist</p>
-            <p className="text-slate-500 text-sm">Submit a prompt to begin orchestration</p>
-          </div>
-        ) : (
-          logs.map((log) => (
-            <div
-              key={log.id}
-              className="bg-slate-800/60 backdrop-blur-sm rounded-lg p-4 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200"
-            >
-              <div className="flex items-start space-x-3">
-                {getStatusIcon(log.status)}
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-amber-400">{log.agent}</span>
-                    <span className="text-xs text-slate-500">
-                      {log.timestamp.toLocaleTimeString()}
-                    </span>
+          ) : (
+            logs.map((log) => (
+              <article
+                key={log.id}
+                className="rounded-lg border border-white/10 bg-white/[0.02] p-3 transition-colors duration-200 hover:bg-white/[0.05]"
+              >
+                <div className="flex items-start gap-3">
+                  {getStatusIcon(log.status)}
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <span className="truncate text-xs font-semibold uppercase tracking-[0.14em] text-neutral-300">{log.agent}</span>
+                      <span className="text-[10px] text-neutral-500">{log.timestamp.toLocaleTimeString()}</span>
+                    </div>
+                    <p className="text-sm leading-relaxed text-neutral-300">{log.message}</p>
                   </div>
-                  <p className="text-slate-300 text-sm leading-relaxed">{log.message}</p>
                 </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 };

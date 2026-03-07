@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, Download, Copy, Star } from 'lucide-react';
+import { ExternalLink, Download, Copy, Grid3X3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -21,87 +21,89 @@ interface OutputPanelProps {
 const OutputPanel = ({ outputs, sessionId }: OutputPanelProps) => {
   const handleCopy = (content: string) => {
     navigator.clipboard.writeText(content);
-    // Add toast notification here
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'preview':
-        return <ExternalLink className="w-4 h-4" />;
+        return <ExternalLink className="h-4 w-4" />;
       case 'download':
-        return <Download className="w-4 h-4" />;
+        return <Download className="h-4 w-4" />;
       case 'link':
-        return <ExternalLink className="w-4 h-4" />;
+        return <ExternalLink className="h-4 w-4" />;
       case 'code':
-        return <Copy className="w-4 h-4" />;
+        return <Copy className="h-4 w-4" />;
       default:
-        return <Star className="w-4 h-4" />;
+        return <Grid3X3 className="h-4 w-4" />;
     }
   };
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm border-t border-slate-700/50">
-      <div className="px-6 py-3 border-b border-slate-700/50">
-        <h3 className="text-lg font-semibold text-white">Output & Deliverables</h3>
-        <p className="text-sm text-slate-400">Session: {sessionId}</p>
-      </div>
-      
-      <div className="p-6">
-        {outputs.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="w-12 h-12 bg-slate-700/50 backdrop-blur-sm rounded-lg mx-auto mb-4 flex items-center justify-center border border-slate-600/50">
-              <Star className="w-6 h-6 text-slate-400" />
+    <div className="mx-auto w-full max-w-6xl px-6 pb-6 pt-5">
+      <section className="overflow-hidden rounded-xl border border-white/10 bg-black/40 backdrop-blur-xl">
+        <div className="border-b border-white/10 px-5 py-3">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-200">Output artifacts</h3>
+          <p className="mt-1 text-xs text-neutral-500">Session: {sessionId}</p>
+        </div>
+
+        <div className="p-5">
+          {outputs.length === 0 ? (
+            <div className="py-10 text-center">
+              <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-md border border-white/10 bg-white/[0.03]">
+                <Grid3X3 className="h-5 w-5 text-neutral-400" />
+              </div>
+              <p className="text-sm text-neutral-300">No outputs yet</p>
+              <p className="mt-1 text-xs text-neutral-500">Generated assets and links will appear here.</p>
             </div>
-            <p className="text-slate-400">No outputs yet</p>
-            <p className="text-slate-500 text-sm">Deliverables will appear here as agents complete their work</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {outputs.map((output) => (
-              <Card key={output.id} className="bg-slate-900/60 backdrop-blur-sm border-slate-700/50 hover:border-slate-600/50 transition-all duration-200">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-white text-sm flex items-center">
-                    {getTypeIcon(output.type)}
-                    <span className="ml-2">{output.title}</span>
-                  </CardTitle>
-                  <CardDescription className="text-slate-400 text-xs">
-                    {output.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0 space-y-3">
-                  {output.content && (
-                    <pre className="max-h-28 overflow-auto rounded-md border border-slate-700 bg-slate-950/70 p-2 text-[11px] leading-relaxed text-slate-300">
-                      {output.content}
-                    </pre>
-                  )}
-                  <div className="flex space-x-2">
-                    {output.url && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                        onClick={() => window.open(output.url, '_blank')}
-                      >
-                        Open
-                      </Button>
-                    )}
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {outputs.map((output) => (
+                <Card
+                  key={output.id}
+                  className="border-white/10 bg-white/[0.03] text-neutral-100 transition-colors duration-200 hover:bg-white/[0.06]"
+                >
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-sm text-neutral-100">
+                      {getTypeIcon(output.type)}
+                      <span className="ml-2 truncate">{output.title}</span>
+                    </CardTitle>
+                    <CardDescription className="text-xs text-neutral-400">{output.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3 pt-0">
                     {output.content && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                        onClick={() => handleCopy(output.content)}
-                      >
-                        Copy
-                      </Button>
+                      <pre className="max-h-28 overflow-auto rounded-md border border-white/10 bg-black/40 p-2 text-[11px] leading-relaxed text-neutral-300">
+                        {output.content}
+                      </pre>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+                    <div className="flex space-x-2">
+                      {output.url && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-white/20 bg-transparent text-neutral-200 hover:bg-white/10"
+                          onClick={() => window.open(output.url, '_blank')}
+                        >
+                          Open
+                        </Button>
+                      )}
+                      {output.content && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-white/20 bg-transparent text-neutral-200 hover:bg-white/10"
+                          onClick={() => handleCopy(output.content)}
+                        >
+                          Copy
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 };
