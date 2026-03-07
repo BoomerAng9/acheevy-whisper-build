@@ -10,6 +10,28 @@ interface PromptInputProps {
   latestNarration?: string;
 }
 
+type SpeechRecognitionResultLike = {
+  0?: {
+    transcript?: string;
+  };
+};
+
+type SpeechRecognitionEventLike = {
+  results: SpeechRecognitionResultLike[];
+};
+
+interface SpeechRecognitionInstance {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 interface SpeechRecognitionAlternative {
   transcript: string;
 }
@@ -55,10 +77,12 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
   }, []);
 
   const handleSubmit = () => {
-    if (prompt.trim() && !isProcessing) {
-      onSubmit(prompt.trim());
-      setPrompt('');
+    if (!prompt.trim() || isProcessing) {
+      return;
     }
+
+    onSubmit(prompt.trim());
+    setPrompt('');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -68,6 +92,9 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
     }
   };
 
+  const resolveSpeechRecognition = (): SpeechRecognitionConstructor | null => {
+    if (typeof window === 'undefined') {
+      return null;
   const toggleVoiceInput = () => {
     if (typeof window === 'undefined') {
       return;
@@ -78,6 +105,11 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
       webkitSpeechRecognition?: SpeechRecognitionConstructor;
     };
 
+    return recognitionProvider.SpeechRecognition || recognitionProvider.webkitSpeechRecognition || null;
+  };
+
+  const toggleVoiceInput = () => {
+    const SpeechRecognition = resolveSpeechRecognition();
     const SpeechRecognition = recognitionProvider.SpeechRecognition || recognitionProvider.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
@@ -115,6 +147,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
         .trim();
 
       if (transcript) {
+        setPrompt((prev) => (prev ? `${prev} ${transcript}`.trim() : transcript));
         setPrompt(prev => (prev ? `${prev} ${transcript}`.trim() : transcript));
       }
     };
@@ -150,33 +183,37 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
   };
 
   return (
-    <div className="bg-slate-800 border-b border-slate-700 p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-6">
-          <p className="text-slate-300 text-sm mb-2">
-            Welcome to Deploy by: ACHIEVEMOR. Share your idea in plain language and our SME agent will convert it into technical prompts plus an ASCII blueprint for iteration.
+    <section className="mx-auto w-full max-w-6xl px-6 pt-6">
+      <div className="rounded-xl border border-white/10 bg-black/40 p-5 backdrop-blur-xl">
+        <div className="mb-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-neutral-500">Voice-first prompt console</p>
+          <h2 className="mt-1 text-xl font-semibold text-neutral-100">Think it. Speak it. Ship it.</h2>
+          <p className="mt-2 max-w-3xl text-sm text-neutral-400">
+            Start with STT, optionally preview via TTS, then deploy to generate a technical prompt and ASCII blueprint.
           </p>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent mb-1">
-            Think It. Prompt It. Let ACHEEVY Manage It.
-          </h2>
         </div>
 
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
         <div className="flex space-x-4">
           <div className="flex-1">
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Describe your project idea in plain English. We will return a technical prompt + ASCII wireframe first. (Enter to send)"
-              className="min-h-[100px] bg-slate-900 border-slate-600 text-white placeholder-slate-400 resize-none"
+              placeholder="Describe your plug in plain English. Press Enter to deploy."
+              className="min-h-[120px] border-white/10 bg-black/50 text-neutral-100 placeholder:text-neutral-500"
               disabled={isProcessing}
             />
           </div>
-          <div className="flex flex-col space-y-2">
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:w-[320px] lg:grid-cols-1">
             <Button
               variant="outline"
               onClick={toggleVoiceInput}
               disabled={isProcessing}
+              className="border-white/20 bg-transparent text-neutral-200 hover:bg-white/10"
+            >
+              {isListening ? <Square className="mr-2 h-4 w-4" /> : <Mic className="mr-2 h-4 w-4" />}
               className="border-slate-600 text-slate-300 hover:bg-slate-700 px-6 py-3"
             >
               {isListening ? <Square className="w-4 h-4 mr-2" /> : <Mic className="w-4 h-4 mr-2" />}
@@ -185,6 +222,18 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
             <Button
               variant="outline"
               onClick={handleSpeak}
+              className="border-white/20 bg-transparent text-neutral-200 hover:bg-white/10"
+              disabled={isProcessing}
+            >
+              <Volume2 className="mr-2 h-4 w-4" />
+              Play TTS
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!prompt.trim() || isProcessing}
+              className="bg-neutral-100 text-neutral-950 hover:bg-neutral-300"
+            >
+              <Send className="mr-2 h-4 w-4" />
               className="border-slate-600 text-slate-300 hover:bg-slate-700 px-6 py-3"
               disabled={isProcessing}
             >
@@ -202,7 +251,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

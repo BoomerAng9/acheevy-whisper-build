@@ -1,6 +1,4 @@
-
 import React from 'react';
-import { Sparkles } from 'lucide-react';
 
 interface BrandedLayoutProps {
   children: React.ReactNode;
@@ -8,17 +6,14 @@ interface BrandedLayoutProps {
 
 const BrandedLayout = ({ children }: BrandedLayoutProps) => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      {/* Background decoration */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-amber-400/5 to-orange-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-orange-400/5 to-amber-600/5 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_38%)]" />
+        <div className="agent-grid-overlay" />
+        <div className="agent-scanline" />
       </div>
-      
-      {/* Content */}
-      <div className="relative z-10">
-        {children}
-      </div>
+
+      <div className="relative z-10">{children}</div>
     </div>
   );
 };
