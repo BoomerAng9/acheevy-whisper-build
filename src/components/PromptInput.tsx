@@ -32,6 +32,30 @@ interface SpeechRecognitionInstance {
   stop: () => void;
 }
 
+interface SpeechRecognitionAlternative {
+  transcript: string;
+}
+
+interface SpeechRecognitionResult {
+  0: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResult[];
+}
+
+interface SpeechRecognitionInstance {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
 
 const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputProps) => {
@@ -45,6 +69,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
+
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -70,6 +95,9 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
   const resolveSpeechRecognition = (): SpeechRecognitionConstructor | null => {
     if (typeof window === 'undefined') {
       return null;
+  const toggleVoiceInput = () => {
+    if (typeof window === 'undefined') {
+      return;
     }
 
     const recognitionProvider = window as typeof window & {
@@ -82,6 +110,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
 
   const toggleVoiceInput = () => {
     const SpeechRecognition = resolveSpeechRecognition();
+    const SpeechRecognition = recognitionProvider.SpeechRecognition || recognitionProvider.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       toast({
@@ -119,6 +148,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
 
       if (transcript) {
         setPrompt((prev) => (prev ? `${prev} ${transcript}`.trim() : transcript));
+        setPrompt(prev => (prev ? `${prev} ${transcript}`.trim() : transcript));
       }
     };
 
@@ -164,6 +194,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
         </div>
 
         <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
+        <div className="flex space-x-4">
           <div className="flex-1">
             <Textarea
               value={prompt}
@@ -183,6 +214,9 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
               className="border-white/20 bg-transparent text-neutral-200 hover:bg-white/10"
             >
               {isListening ? <Square className="mr-2 h-4 w-4" /> : <Mic className="mr-2 h-4 w-4" />}
+              className="border-slate-600 text-slate-300 hover:bg-slate-700 px-6 py-3"
+            >
+              {isListening ? <Square className="w-4 h-4 mr-2" /> : <Mic className="w-4 h-4 mr-2" />}
               {isListening ? 'Stop STT' : 'Start STT'}
             </Button>
             <Button
@@ -200,6 +234,18 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
               className="bg-neutral-100 text-neutral-950 hover:bg-neutral-300"
             >
               <Send className="mr-2 h-4 w-4" />
+              className="border-slate-600 text-slate-300 hover:bg-slate-700 px-6 py-3"
+              disabled={isProcessing}
+            >
+              <Volume2 className="w-4 h-4 mr-2" />
+              Play TTS
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!prompt.trim() || isProcessing}
+              className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-6 py-3"
+            >
+              <Send className="w-4 h-4 mr-2" />
               {isProcessing ? 'Processing...' : 'Deploy'}
             </Button>
           </div>
