@@ -10,17 +10,15 @@ interface PromptInputProps {
   latestNarration?: string;
 }
 
-interface SpeechRecognitionAlternative {
-  transcript: string;
-}
+type SpeechRecognitionResultLike = {
+  0?: {
+    transcript?: string;
+  };
+};
 
-interface SpeechRecognitionResult {
-  0: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionEvent {
-  results: SpeechRecognitionResult[];
-}
+type SpeechRecognitionEventLike = {
+  results: SpeechRecognitionResultLike[];
+};
 
 interface SpeechRecognitionInstance {
   lang: string;
@@ -29,7 +27,7 @@ interface SpeechRecognitionInstance {
   onstart: (() => void) | null;
   onend: (() => void) | null;
   onerror: (() => void) | null;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
   start: () => void;
   stop: () => void;
 }
@@ -67,9 +65,9 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
     }
   };
 
-  const toggleVoiceInput = () => {
+  const resolveSpeechRecognition = (): SpeechRecognitionConstructor | null => {
     if (typeof window === 'undefined') {
-      return;
+      return null;
     }
 
     const recognitionProvider = window as typeof window & {
@@ -77,7 +75,11 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
       webkitSpeechRecognition?: SpeechRecognitionConstructor;
     };
 
-    const SpeechRecognition = recognitionProvider.SpeechRecognition || recognitionProvider.webkitSpeechRecognition;
+    return recognitionProvider.SpeechRecognition || recognitionProvider.webkitSpeechRecognition || null;
+  };
+
+  const toggleVoiceInput = () => {
+    const SpeechRecognition = resolveSpeechRecognition();
 
     if (!SpeechRecognition) {
       toast({
@@ -142,10 +144,7 @@ const PromptInput = ({ onSubmit, isProcessing, latestNarration }: PromptInputPro
     }
 
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(speechText);
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    window.speechSynthesis.speak(utterance);
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(speechText));
   };
 
   return (
