@@ -99,3 +99,48 @@
     @apply bg-background text-foreground;
   }
 }
+
+#root {
+  min-height: 100vh;
+}
+
+.agent-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.8), transparent 85%);
+  animation: grid-drift 22s linear infinite;
+  opacity: 0.3;
+}
+
+.agent-scanline {
+  position: absolute;
+  inset: -20% 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(255, 255, 255, 0.03) 50%, transparent 60%);
+  animation: scanline-sweep 10s ease-in-out infinite;
+  opacity: 0.45;
+}
+
+@keyframes grid-drift {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(44px);
+  }
+}
+
+@keyframes scanline-sweep {
+  0% {
+    transform: translateY(-10%);
+  }
+  50% {
+    transform: translateY(10%);
+  }
+  100% {
+    transform: translateY(-10%);
+  }
+}
