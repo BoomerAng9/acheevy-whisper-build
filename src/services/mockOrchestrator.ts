@@ -1,348 +1,104 @@
-interface LogEntry {
-  id: string;
-  timestamp: Date;
-  agent: string;
-  message: string;
-  status: 'thinking' | 'working' | 'complete' | 'waiting';
+import { AgentLogEntry, AgentRole, AgentState, OutputItem, RoutedTask } from '@/types/agent';
+
+interface OrchestratorCallbacks {
+  onLog: (log: AgentLogEntry) => void;
+  onOutput: (output: OutputItem) => void;
+  onComplete: () => void;
+  onAgentsUpdate: (agents: AgentState[]) => void;
+  onBoardUpdate: (tasks: RoutedTask[]) => void;
 }
 
-interface OutputItem {
-  id: string;
-  type: 'preview' | 'download' | 'link' | 'code';
-  title: string;
-  description: string;
-  url?: string;
-  content?: string;
-  status: 'ready' | 'processing' | 'error';
-}
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-interface AgentResponse {
-  agent: string;
-  message: string;
-  status: LogEntry['status'];
-  delay: number;
-}
-
-interface PromptAnalysis {
-  domain: string;
-  audience: string;
-  features: string[];
-  recommendedStack: string[];
-  inferredConstraints: string[];
-  technicalPrompt: string;
-}
-
-const stackKeywords: Record<string, string> = {
-  mobile: 'Responsive React + PWA support',
-  dashboard: 'React + charts + analytics pipeline',
-  ecommerce: 'Stripe checkout + product catalog + order management',
-  auth: 'Supabase Auth + row-level security',
-  ai: 'LLM orchestration + prompt templates + guardrails',
-  realtime: 'WebSocket or Supabase realtime subscriptions',
-  upload: 'Object storage + signed URLs + file validation',
-  booking: 'Calendar scheduling + transactional locking',
-  payments: 'Payment processor integration + webhook handling',
-};
-
-const featureHints = [
-  'authentication',
-  'payments',
-  'analytics dashboard',
-  'file uploads',
-  'notifications',
-  'admin controls',
-  'search and filtering',
-  'mobile responsive interface',
+const baseAgents: AgentState[] = [
+  { id: 'coordinator', marker: 'BOOMER_ANG_01', name: 'NOVA', role: 'Main Coordinator', mission: 'Coordinate boomerangs', objective: 'Deliver complete orchestration trace', status: 'idle', zone: 'meeting', updatedAt: new Date() },
+  { id: 'planner', marker: 'BOOMER_ANG_02', name: 'Atlas', role: 'Planner', mission: 'Plan milestone scope', objective: 'Convert intent into tasks', status: 'idle', zone: 'work', updatedAt: new Date() },
+  { id: 'data-scientist', marker: 'BOOMER_ANG_03', name: 'Pencil', role: 'Data Scientist', mission: 'Vision-first iteration', objective: 'Translate visual+nl intent to technical specs', status: 'idle', zone: 'work', updatedAt: new Date() },
+  { id: 'qa', marker: 'BOOMER_ANG_04', name: 'Pulse', role: 'Quality Assurance', mission: 'Validate outcomes', objective: 'Protect reliability and acceptance quality', status: 'idle', zone: 'rest', updatedAt: new Date() },
+  { id: 'devops', marker: 'BOOMER_ANG_05', name: 'Forge', role: 'DevOps', mission: 'Secure deployments', objective: 'Containerized and cloud-safe runtime', status: 'idle', zone: 'rest', updatedAt: new Date() },
+  { id: 'security', marker: 'BOOMER_ANG_06', name: 'Shield', role: 'Security', mission: 'Enforce guardrails', objective: 'Prevent leakage and policy violations', status: 'idle', zone: 'rest', updatedAt: new Date() },
 ];
 
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const inferDomain = (prompt: string): string => {
+const getTaskType = (prompt: string): RoutedTask['type'][] => {
   const lower = prompt.toLowerCase();
-  if (lower.includes('health')) return 'HealthTech';
-  if (lower.includes('school') || lower.includes('education') || lower.includes('course')) return 'EdTech';
-  if (lower.includes('store') || lower.includes('shop') || lower.includes('ecommerce')) return 'Commerce';
-  if (lower.includes('finance') || lower.includes('fintech') || lower.includes('invoice')) return 'FinTech';
-  return 'General SaaS';
+  const types: RoutedTask['type'][] = ['feature-definition'];
+  if (lower.includes('deploy') || lower.includes('infrastructure') || lower.includes('production') || lower.includes('sandbox')) types.push('deployment');
+  if (lower.includes('qa') || lower.includes('test')) types.push('qa-check');
+  if (lower.includes('secure') || lower.includes('compliance') || lower.includes('privacy')) types.push('security-validation');
+  if (lower.includes('data') || lower.includes('vision') || lower.includes('analytics') || lower.includes('index')) types.push('data-analysis');
+  return [...new Set(types)];
 };
 
-const inferAudience = (prompt: string): string => {
-  const lower = prompt.toLowerCase();
-  if (lower.includes('small business')) return 'Small business owners';
-  if (lower.includes('students')) return 'Students and educators';
-  if (lower.includes('creator')) return 'Digital creators';
-  if (lower.includes('team')) return 'Internal operational teams';
-  return 'End users with mixed technical experience';
-};
-
-const inferStack = (prompt: string): string[] => {
-  const lower = prompt.toLowerCase();
-  const picks = Object.entries(stackKeywords)
-    .filter(([keyword]) => lower.includes(keyword))
-    .map(([, recommendation]) => recommendation);
-
-  const baseline = ['TypeScript React frontend', 'Supabase data + auth backend', 'Role-based access control'];
-
-  return [...baseline, ...picks].slice(0, 6);
-};
-
-const inferFeatures = (prompt: string): string[] => {
-  const lower = prompt.toLowerCase();
-  const matched = featureHints.filter(feature => {
-    const token = feature.split(' ')[0];
-    return lower.includes(token);
-  });
-
-  if (matched.length > 0) {
-    return matched;
-  }
-
-  return [
-    'guided onboarding flow',
-    'core workflow automation',
-    'reporting and insight panel',
-    'settings and account management',
-  ];
-};
-
-const inferConstraints = (prompt: string): string[] => {
-  const lower = prompt.toLowerCase();
-  const constraints: string[] = [];
-
-  if (lower.includes('fast') || lower.includes('quick')) {
-    constraints.push('Prioritize rapid MVP delivery (1-2 sprint plan).');
-  }
-
-  if (lower.includes('secure') || lower.includes('privacy')) {
-    constraints.push('Enforce secure-by-default data handling and access policies.');
-  }
-
-  if (lower.includes('no code') || lower.includes('non technical')) {
-    constraints.push('Use plain-language admin tools and no-code operational controls.');
-  }
-
-  if (constraints.length === 0) {
-    constraints.push('Balance implementation speed with maintainable architecture.');
-  }
-
-  return constraints;
-};
-
-const buildTechnicalPrompt = (originalPrompt: string, analysis: Omit<PromptAnalysis, 'technicalPrompt'>): string => {
-  const { domain, audience, features, recommendedStack, inferredConstraints } = analysis;
-
-  return [
-    'SYSTEM ROLE: Subject Matter Expert + Technical Product Architect',
-    '',
-    'GOAL:',
-    `Convert the user intent into an implementation-ready plan for a ${domain} web plug on Deploy by: ACHIEVEMOR.`,
-    '',
-    'USER INTENT (raw):',
-    originalPrompt,
-    '',
-    'TECHNICAL INTERPRETATION:',
-    `- Target audience: ${audience}`,
-    `- Core feature scope: ${features.join(', ')}`,
-    `- Recommended stack: ${recommendedStack.join(' | ')}`,
-    `- Constraints: ${inferredConstraints.join(' ')}`,
-    '',
-    'DELIVERY REQUIREMENTS:',
-    '- Produce a phased build plan (MVP -> V1 -> V2).',
-    '- Define data models, APIs, and permissions.',
-    '- Include UX flow with edge-case handling.',
-    '- Generate implementation prompts for specialized agents (frontend, backend, QA).',
-  ].join('\n');
-};
-
-const buildAsciiIterationTemplate = (prompt: string, analysis: Omit<PromptAnalysis, 'technicalPrompt'>): string => {
-  const today = new Date().toISOString().slice(0, 10);
-
-  return [
-    '+----------------------------------------------------------------------------------+',
-    '| X-Project Name: ____________________________ | X-Draft: ________________________ |',
-    '| X-Project Owner: ___________________________ | X-Date: _________________________ |',
-    '+----------------------------------------------------------------------------------+',
-    '| ITERATION PHASE 0 - ASCII BLUEPRINT (PLAN BEFORE CODE)                          |',
-    '+----------------------------------------------------------------------------------+',
-    '| USER INTENT (PLAIN LANGUAGE)                                                     |',
-    '|----------------------------------------------------------------------------------|',
-    `| ${prompt.slice(0, 80).padEnd(80, ' ')} |`,
-    '+----------------------------------------------------------------------------------+',
-    '| SME INTERPRETATION                                                               |',
-    '|----------------------------------------------------------------------------------|',
-    `| Domain: ${analysis.domain.padEnd(72, ' ')} |`,
-    `| Audience: ${analysis.audience.slice(0, 70).padEnd(70, ' ')} |`,
-    `| Features: ${analysis.features.join(', ').slice(0, 70).padEnd(70, ' ')} |`,
-    '+----------------------------------------------------------------------------------+',
-    '| ASCII WIREFRAME SPEC                                                             |',
-    '|----------------------------------------------------------------------------------|',
-    '| [NAVBAR: Logo | Primary Nav | CTA ]                                             |',
-    '|----------------------------------------------------------------------------------|',
-    '| [SIDEBAR]      [KPI CARD] [KPI CARD] [KPI CARD]                                 |',
-    '| [Menu]         --------------------------------------------------                |',
-    '| [Menu]         [Main Chart / Core Workflow Visualization]                       |',
-    '| [Menu]         --------------------------------------------------                |',
-    '| [Menu]         [Secondary Panel: Activity | Notifications | Status]             |',
-    '|----------------------------------------------------------------------------------|',
-    '| [DATA TABLE / TASK LIST / AUDIT TRAIL]                                          |',
-    '|----------------------------------------------------------------------------------|',
-    '| [FOOTER: links | compliance | support ]                                         |',
-    '+----------------------------------------------------------------------------------+',
-    '| ITERATION INSTRUCTIONS                                                           |',
-    '|----------------------------------------------------------------------------------|',
-    '| 1) Redraw with 2 layout changes only.                                            |',
-    '| 2) Keep structure stable, revise proportions and labels.                         |',
-    '| 3) After approval, convert to React + Tailwind + Supabase tasks.                 |',
-    '+----------------------------------------------------------------------------------+',
-    `| Generated: ${today.padEnd(76, ' ')} |`,
-    '+----------------------------------------------------------------------------------+',
-  ].join('\n');
-};
-
-const buildAsciiPromptTemplate = (): string => {
-  return [
-    'PROMPT TEMPLATE: ASCII-FIRST APP ITERATION',
-    '',
-    'Before writing any code, create a complete ASCII wireframe and blueprint using this metadata:',
-    '- X-Project Name: <name>',
-    '- X-Draft: <draft number or label>',
-    '- X-Project Owner: <owner>',
-    '- X-Date: <YYYY-MM-DD>',
-    '',
-    'Then do exactly this:',
-    '1) Convert the user idea to a technical interpretation.',
-    '2) Draw the full layout in ASCII (navbar, sidebar, cards, charts/content, table, footer).',
-    '3) Add one API/data flow diagram in ASCII.',
-    '4) Ask for exactly 2 revision changes and redraw.',
-    '5) Only after approval, generate implementation tickets for frontend, backend, and QA.',
-  ].join('\n');
-};
-
-const analyzePrompt = (prompt: string): PromptAnalysis => {
-  const base = {
-    domain: inferDomain(prompt),
-    audience: inferAudience(prompt),
-    features: inferFeatures(prompt),
-    recommendedStack: inferStack(prompt),
-    inferredConstraints: inferConstraints(prompt),
-  };
-
-  return {
-    ...base,
-    technicalPrompt: buildTechnicalPrompt(prompt, base),
-  };
+const assigneesForType: Record<RoutedTask['type'], AgentRole[]> = {
+  'feature-definition': ['planner', 'data-scientist'],
+  deployment: ['planner', 'devops'],
+  'qa-check': ['qa', 'coordinator'],
+  'security-validation': ['security', 'coordinator'],
+  'data-analysis': ['data-scientist', 'planner'],
+  general: ['coordinator'],
 };
 
 export class MockOrchestrator {
-  private logCallback: (log: LogEntry) => void;
-  private outputCallback: (output: OutputItem) => void;
-  private completeCallback: () => void;
-
-  constructor(
-    logCallback: (log: LogEntry) => void,
-    outputCallback: (output: OutputItem) => void,
-    completeCallback: () => void
-  ) {
-    this.logCallback = logCallback;
-    this.outputCallback = outputCallback;
-    this.completeCallback = completeCallback;
-  }
+  constructor(private readonly callbacks: OrchestratorCallbacks) {}
 
   async processPrompt(prompt: string): Promise<void> {
-    console.log('ACHEEVY processing prompt:', prompt);
+    const types = getTaskType(prompt);
+    const tasks: RoutedTask[] = types.map((type, index) => ({
+      id: `TASK-${index + 1}`,
+      title: type.replace('-', ' ').toUpperCase(),
+      type,
+      description: `Generated from user intent: ${prompt.slice(0, 120)}`,
+      assignees: assigneesForType[type],
+      status: 'todo',
+    }));
 
-    const analysis = analyzePrompt(prompt);
-    const asciiBlueprint = buildAsciiIterationTemplate(prompt, analysis);
+    let agents = [...baseAgents];
+    this.callbacks.onAgentsUpdate(agents);
+    this.callbacks.onBoardUpdate(tasks);
 
-    const agentResponses: AgentResponse[] = [
-      {
-        agent: 'ACHEEVY Orchestrator',
-        message: 'Analyzing your request and identifying the best approach...',
-        status: 'thinking',
-        delay: 700,
-      },
-      {
-        agent: 'Subject Matter Expert Agent',
-        message: `Translating your intent into technical language for a ${analysis.domain} implementation...`,
-        status: 'working',
-        delay: 1100,
-      },
-      {
-        agent: 'ASCII Blueprint Agent',
-        message: 'Drafting an ASCII-first schematic so iteration happens before code generation...',
-        status: 'working',
-        delay: 1200,
-      },
-      {
-        agent: 'Prompt Engineering Agent',
-        message: 'Producing structured prompts for frontend, backend, and QA specialists...',
-        status: 'working',
-        delay: 1000,
-      },
-      {
-        agent: 'ACHEEVY Orchestrator',
-        message: 'Technical conversion complete. Iteration-ready blueprint + prompt package delivered.',
-        status: 'complete',
-        delay: 600,
-      },
-    ];
+    await this.log('NOVA', 'Mission briefing: ACHEEVY requested a new objective. Routing boomerangs now.', 'thinking');
 
-    for (const response of agentResponses) {
-      await wait(response.delay);
-      this.logCallback({
-        id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
-        timestamp: new Date(),
-        agent: response.agent,
-        message: response.message,
-        status: response.status,
-      });
+    for (const task of tasks) {
+      this.callbacks.onBoardUpdate(tasks.map((t) => (t.id === task.id ? { ...t, status: 'in-progress' } : t)));
+      agents = this.currentAgents(agents, task.assignees, 'working', 'work', task);
+      await this.log('NOVA', `${task.id} started. Mission=${task.title}. Objective=${task.description}`, 'working');
+
+      for (const role of task.assignees) {
+        const actor = agents.find((a) => a.id === role);
+        if (actor) {
+          await this.log(`${actor.name} (${actor.marker})`, `${actor.mission} | ${actor.objective}`, 'working');
+        }
+      }
+
+      agents = this.currentAgents(agents, task.assignees, 'waiting', 'meeting', task);
+      await this.log('NOVA', `${task.id} collaboration review in meeting zone.`, 'waiting');
+      await wait(300);
+
+      agents = this.currentAgents(agents, task.assignees, 'complete', 'rest', task);
+      await this.log('NOVA', `${task.id} complete. Efficiency trace captured for bullpen decisioning.`, 'complete');
+      this.callbacks.onBoardUpdate(tasks.map((t) => (t.id === task.id ? { ...t, status: 'done' } : t)));
     }
 
-    const generatedOutputs: OutputItem[] = [
-      {
-        id: 'output_ascii_template',
-        type: 'code',
-        title: 'ASCII Iteration Blueprint',
-        description: 'First-step wireframe prototype using X-Project metadata placeholders',
-        content: asciiBlueprint,
-        status: 'ready',
-      },
-      {
-        id: 'output_ascii_prompt',
-        type: 'code',
-        title: 'ASCII Prompt Template',
-        description: 'Reusable prompt to force plan-first iteration before code generation',
-        content: buildAsciiPromptTemplate(),
-        status: 'ready',
-      },
-      {
-        id: 'output_sme_brief',
-        type: 'code',
-        title: 'SME Technical Brief',
-        description: 'Converted natural-language request into technical implementation context',
-        content: analysis.technicalPrompt,
-        status: 'ready',
-      },
-      {
-        id: 'output_agent_prompt',
-        type: 'code',
-        title: 'Specialist Agent Prompt',
-        description: 'Prompt package ready for orchestration across technical sub-agents',
-        content: [
-          `PROJECT_DOMAIN=${analysis.domain}`,
-          `TARGET_AUDIENCE=${analysis.audience}`,
-          `FEATURE_SET=${analysis.features.join('; ')}`,
-          `STACK=${analysis.recommendedStack.join('; ')}`,
-          `CONSTRAINTS=${analysis.inferredConstraints.join('; ')}`,
-          'NEXT_ACTION=Iterate on ASCII spec, then generate implementation tickets and execution prompts.',
-        ].join('\n'),
-        status: 'ready',
-      },
-    ];
+    this.callbacks.onOutput({
+      id: 'boomerang-conversation',
+      type: 'code',
+      title: 'Boomerang mission transcript',
+      description: 'Mission statements and objectives per task for audit/review.',
+      status: 'ready',
+      content: agents.map((a) => `${a.marker} ${a.name}: ${a.mission} -> ${a.objective}`).join('\n'),
+    });
 
-    await wait(600);
-    generatedOutputs.forEach(output => this.outputCallback(output));
+    this.callbacks.onComplete();
+  }
 
-    this.completeCallback();
+  private currentAgents(agents: AgentState[], roles: AgentRole[], status: AgentState['status'], zone: AgentState['zone'], task: RoutedTask): AgentState[] {
+    const updated = agents.map((agent) => roles.includes(agent.id) ? ({ ...agent, status, zone, taskId: task.id, taskTitle: task.title, updatedAt: new Date() }) : agent);
+    this.callbacks.onAgentsUpdate(updated);
+    return updated;
+  }
+
+  private async log(agent: string, message: string, status: AgentLogEntry['status']) {
+    this.callbacks.onLog({ id: crypto.randomUUID(), timestamp: new Date(), agent, message, status });
+    await wait(220);
   }
 }

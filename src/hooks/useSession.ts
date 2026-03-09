@@ -13,7 +13,7 @@ export const useSession = () => {
 
   useEffect(() => {
     // Check for existing session in localStorage
-    const existingSession = localStorage.getItem('deploy-session');
+    const existingSession = localStorage.getItem('grammar-session');
     if (existingSession) {
       const parsed = JSON.parse(existingSession);
       setSession({
@@ -30,7 +30,7 @@ export const useSession = () => {
         prompts: []
       };
       setSession(newSession);
-      localStorage.setItem('deploy-session', JSON.stringify(newSession));
+      localStorage.setItem('grammar-session', JSON.stringify(newSession));
     }
   }, []);
 
@@ -44,11 +44,11 @@ export const useSession = () => {
     };
     
     setSession(updatedSession);
-    localStorage.setItem('deploy-session', JSON.stringify(updatedSession));
+    localStorage.setItem('grammar-session', JSON.stringify(updatedSession));
   };
 
   const clearSession = () => {
-    localStorage.removeItem('deploy-session');
+    localStorage.removeItem('grammar-session');
     const newSession: Session = {
       id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date(),
@@ -56,7 +56,7 @@ export const useSession = () => {
       prompts: []
     };
     setSession(newSession);
-    localStorage.setItem('deploy-session', JSON.stringify(newSession));
+    localStorage.setItem('grammar-session', JSON.stringify(newSession));
   };
 
   return { session, addPrompt, clearSession };

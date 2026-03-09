@@ -1,46 +1,20 @@
-
-import React from 'react';
 import { Zap, Sparkles, Cpu } from 'lucide-react';
 
 const EmptyState = () => {
   return (
-    <div className="text-center py-16 px-6">
-      <div className="max-w-md mx-auto">
-        <div className="relative mb-8">
-          <div className="w-24 h-24 bg-gradient-to-br from-orange-400 to-amber-600 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
-            <Zap className="w-12 h-12 text-white" />
-          </div>
-          <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-amber-300 to-orange-400 rounded-full flex items-center justify-center animate-pulse">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+    <div className="px-6 py-16 text-center">
+      <div className="mx-auto max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="relative mb-6">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500"><Zap className="h-10 w-10 text-white" /></div>
+          <div className="absolute right-24 top-0 flex h-8 w-8 items-center justify-center rounded-full bg-amber-400"><Sparkles className="h-4 w-4 text-white" /></div>
         </div>
-        
-        <h3 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent mb-4">
-          ACHEEVY is Ready
-        </h3>
-        
-        <p className="text-slate-300 text-lg mb-6">
-          Your AI development team is standing by
-        </p>
-        
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-3 border border-slate-700/50">
-            <Cpu className="w-6 h-6 text-amber-400 mx-auto mb-2" />
-            <p className="text-xs text-slate-400">Architecture</p>
-          </div>
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-3 border border-slate-700/50">
-            <Zap className="w-6 h-6 text-orange-400 mx-auto mb-2" />
-            <p className="text-xs text-slate-400">Development</p>
-          </div>
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-3 border border-slate-700/50">
-            <Sparkles className="w-6 h-6 text-amber-500 mx-auto mb-2" />
-            <p className="text-xs text-slate-400">Deployment</p>
-          </div>
+        <h3 className="mb-2 text-2xl font-bold text-slate-900">Grammar is Ready</h3>
+        <p className="mb-6 text-slate-600">Your boomerang team is waiting for mission brief.</p>
+        <div className="mb-6 grid grid-cols-3 gap-3 text-xs">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><Cpu className="mx-auto mb-1 h-5 w-5 text-blue-600" />Architecture</div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><Zap className="mx-auto mb-1 h-5 w-5 text-indigo-600" />Execution</div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><Sparkles className="mx-auto mb-1 h-5 w-5 text-amber-500" />Optimization</div>
         </div>
-        
-        <p className="text-slate-500 text-sm">
-          Describe your project above and watch the magic happen
-        </p>
       </div>
     </div>
   );
