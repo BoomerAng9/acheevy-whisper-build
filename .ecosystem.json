@@ -1,0 +1,29 @@
+{
+  "node": "acheevy-whisper-build",
+  "role": "app",
+  "network": "boomerang9-ecosystem",
+  "version": "1.0.0",
+  "description": "Voice-first UI for ACHEEVY — Whisper-powered speech interface built with Vite + React",
+  "provides": [
+    { "name": "whisper-ui", "path": "src/", "description": "Voice recording and transcription UI" },
+    { "name": "voice-components", "path": "src/components/", "description": "Reusable voice interaction components" },
+    { "name": "supabase-auth", "path": "supabase/", "description": "Supabase auth and database integration" }
+  ],
+  "consumes": [
+    { "node": "agent-acheevy-009", "capability": "agent-api", "endpoint": "/ws/v1/stream" },
+    { "node": "aims", "capability": "api-backend", "endpoint": "/api/aims/auth" },
+    { "node": "chicken-hawk", "capability": "gateway", "endpoint": "https://gateway.acheevy.digital" }
+  ],
+  "connections": {
+    "agent-acheevy-009": { "type": "streams", "purpose": "Real-time voice-to-text and agent response streaming" },
+    "aims": { "type": "authenticates", "purpose": "User auth and session management" },
+    "chicken-hawk": { "type": "routes-through", "purpose": "API traffic goes through gateway" },
+    "myclaw": { "type": "referenced-by", "purpose": "Shared assets and skills" }
+  },
+  "file_index": {
+    "entrypoints": ["index.html", "src/"],
+    "config": ["vite.config.ts", "tailwind.config.ts", "tsconfig.json"],
+    "components": ["src/components/"],
+    "supabase": ["supabase/"]
+  }
+}
