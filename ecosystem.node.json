@@ -1,0 +1,21 @@
+{
+  "$schema": "aims-ecosystem-node/v1",
+  "nodeId": "acheevy-whisper-build",
+  "repo": "BoomerAng9/acheevy-whisper-build",
+  "tier": 2,
+  "role": "service",
+  "label": "ACHEEVY Whisper — Speech-to-Text",
+  "description": "Whisper-based STT service powering voice input across the AIMS platform. Voice-first is default for all user interactions.",
+  "provides": ["whisper-stt", "voice-transcription", "audio-processing"],
+  "consumes": ["aims-backend"],
+  "endpoints": {},
+  "hub": "BoomerAng9/AIMS",
+  "peers": [
+    "BoomerAng9/AIMS",
+    "BoomerAng9/Agent-ACHEEVY-009"
+  ],
+  "chatIcon": {
+    "asset": "assets/acheevy-helmet.png",
+    "rule": "ACHEEVY Helmet is the ONLY primary chat avatar."
+  }
+}
